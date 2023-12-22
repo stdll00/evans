@@ -94,7 +94,7 @@ func (c *Config) Validate() error {
 		{"port must not be empty", len(c.Server.Port) == 0},
 		{"certFile config or --cert flag required", c.Request.CertFile == "" && c.Request.CertKeyFile != ""},
 		{"certKeyFile config or --certkey flag required", c.Request.CertFile != "" && c.Request.CertKeyFile == ""},
-		{"one or more proto files, or gRPC reflection required", len(c.Default.ProtoFile) == 0 && !c.Server.Reflection},
+		{"one or more proto files, or gRPC reflection or protoset file required", len(c.Default.ProtoFile) == 0 && !c.Server.Reflection && len(c.Default.Protoset) == 0},
 		// TODO: support it.
 		{"currently, gRPC-Web with TLS communication is not supported", c.Request.Web && c.Server.TLS},
 	}
@@ -112,6 +112,7 @@ func (c *Config) Validate() error {
 type Default struct {
 	ProtoPath []string `toml:"protoPath"`
 	ProtoFile []string `toml:"protoFile"`
+	Protoset  []string `toml:"protoset"`
 	Package   string   `toml:"package"`
 	Service   string   `toml:"service"`
 }
@@ -139,6 +140,7 @@ func newDefaultViper() *viper.Viper {
 	v := viper.New()
 	v.SetDefault("default.protoPath", []string{""})
 	v.SetDefault("default.protoFile", []string{""})
+	v.SetDefault("default.protoset", "")
 	v.SetDefault("default.package", "")
 	v.SetDefault("default.service", "")
 
@@ -177,6 +179,7 @@ func bindFlags(vp *viper.Viper, fs *pflag.FlagSet) {
 	kv := map[string]string{
 		"default.protoPath":   "path",
 		"default.protoFile":   "proto",
+		"default.protoset":    "protoset",
 		"default.package":     "package",
 		"default.service":     "service",
 		"server.host":         "host",

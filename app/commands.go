@@ -152,6 +152,7 @@ func bindFlags(f *pflag.FlagSet, flags *flags, w io.Writer) {
 	f.StringVar(&flags.common.service, "service", "", "default service")
 	f.StringSliceVar(&flags.common.path, "path", nil, "comma-separated proto file paths")
 	f.StringSliceVar(&flags.common.proto, "proto", nil, "comma-separated proto file names")
+	f.StringSliceVar(&flags.common.protoset, "protoset", nil, "The compiled protoset file. Alternative to proto.")
 	f.StringVar(&flags.common.host, "host", "", "gRPC server host")
 	f.StringVarP(&flags.common.port, "port", "p", "50051", "gRPC server port")
 	f.Var(

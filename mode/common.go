@@ -105,6 +105,8 @@ func setDefault(cfg *config.Config) error {
 func newDescSource(cfg *config.Config, grpcClient grpcreflection.Client) (descSource proto.DescriptorSource, err error) {
 	if cfg.Server.Reflection {
 		descSource = proto.NewDescriptorSourceFromReflection(grpcClient)
+	} else if len(cfg.Default.Protoset) > 0 {
+		descSource, err = proto.NewDescriptorSourceFromProtoset(cfg.Default.Protoset)
 	} else {
 		descSource, err = proto.NewDescriptorSourceFromFiles(cfg.Default.ProtoPath, cfg.Default.ProtoFile)
 	}

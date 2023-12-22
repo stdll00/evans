@@ -2,11 +2,16 @@ package proto
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/bufbuild/protocompile"
 	"github.com/bufbuild/protocompile/linker"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 //go:generate moq -out mock.go . DescriptorSource
@@ -35,6 +40,44 @@ func (r *reflection) ListServices() ([]string, error) {
 
 func (r *reflection) FindSymbol(name string) (protoreflect.Descriptor, error) {
 	return r.client.FindSymbol(name)
+}
+
+func NewDescriptorSourceFromProtoset(fnames []string) (DescriptorSource, error) {
+	var fds []linker.File
+	for _, fileName := range fnames {
+		b, err := os.ReadFile(fileName)
+		if err != nil {
+			return nil, fmt.Errorf("could not load protoset file %q: %v", fileName, err)
+		}
+		var fs descriptorpb.FileDescriptorSet
+		err = proto.Unmarshal(b, &fs)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse contents of protoset file %q: %v", fileName, err)
+		}
+		fd, err := protodesc.NewFiles(&fs)
+		if err != nil {
+			return nil, fmt.Errorf("cloud not create protoregistry.Files from filedescriptor set %w", err)
+		}
+		{
+			var err error
+			fd.RangeFiles(func(descriptor protoreflect.FileDescriptor) bool {
+				file, err := linker.NewFileRecursive(descriptor)
+				if err != nil {
+
+					return false
+				}
+				if file == nil {
+					return true
+				}
+				fds = append(fds, file)
+				return true
+			})
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return &files{fds: fds}, nil
 }
 
 type files struct {

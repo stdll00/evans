@@ -10,8 +10,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-//nolint:maligned
 // flags defines available command line flags.
+//
+//nolint:maligned
 type flags struct {
 	mode struct {
 		repl bool
@@ -32,6 +33,7 @@ type flags struct {
 		service    string
 		path       []string
 		proto      []string
+		protoset   []string
 		host       string
 		port       string
 		header     map[string][]string
